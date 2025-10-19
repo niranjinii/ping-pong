@@ -5,6 +5,7 @@ from .ball import Ball
 # Game Engine
 
 WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 
 class GameEngine:
     def __init__(self, width, height):
@@ -17,9 +18,15 @@ class GameEngine:
         self.ai = Paddle(width - 20, height // 2 - 50, self.paddle_width, self.paddle_height)
         self.ball = Ball(width // 2, height // 2, 7, 7, width, height)
 
+        self.font = pygame.font.SysFont("Arial", 30)
+        self.large_font = pygame.font.SysFont("Arial", 60)
+
         self.player_score = 0
         self.ai_score = 0
-        self.font = pygame.font.SysFont("Arial", 30)
+        self.winning_score = 5  # Default winning target
+
+        self.game_over = False
+        self.winner = None
 
     def handle_input(self):
         keys = pygame.key.get_pressed()
@@ -29,9 +36,12 @@ class GameEngine:
             self.player.move(10, self.height)
 
     def update(self):
-        self.ball.move()
-        self.ball.check_collision(self.player, self.ai)
+        if self.game_over:
+            return  # Skip updates during game over screen
 
+        self.ball.move(self.player, self.ai)
+
+        # Scoring logic
         if self.ball.x <= 0:
             self.ai_score += 1
             self.ball.reset()
@@ -39,17 +49,97 @@ class GameEngine:
             self.player_score += 1
             self.ball.reset()
 
+        # AI tracking
         self.ai.auto_track(self.ball, self.height)
 
+        # Check if game has ended
+        self.check_game_over()
+
     def render(self, screen):
+        screen.fill(BLACK)
+
         # Draw paddles and ball
         pygame.draw.rect(screen, WHITE, self.player.rect())
         pygame.draw.rect(screen, WHITE, self.ai.rect())
         pygame.draw.ellipse(screen, WHITE, self.ball.rect())
-        pygame.draw.aaline(screen, WHITE, (self.width//2, 0), (self.width//2, self.height))
+        pygame.draw.aaline(screen, WHITE, (self.width // 2, 0), (self.width // 2, self.height))
 
-        # Draw score
+        # Draw scores
         player_text = self.font.render(str(self.player_score), True, WHITE)
         ai_text = self.font.render(str(self.ai_score), True, WHITE)
-        screen.blit(player_text, (self.width//4, 20))
-        screen.blit(ai_text, (self.width * 3//4, 20))
+        screen.blit(player_text, (self.width // 4, 20))
+        screen.blit(ai_text, (self.width * 3 // 4, 20))
+
+        # Display Game Over screen
+        if self.game_over:
+            self.render_game_over(screen)
+
+    def check_game_over(self):
+        if self.player_score == self.winning_score:
+            self.winner = "Player"
+            self.game_over = True
+        elif self.ai_score == self.winning_score:
+            self.winner = "AI"
+            self.game_over = True
+
+        if self.game_over:
+            # Show final frame before waiting for replay choice
+            pygame.display.flip()
+            self.wait_for_replay()
+
+    def render_game_over(self, screen):
+        # Show winner message
+        msg = f"{self.winner} Wins!"
+        msg_surface = self.large_font.render(msg, True, WHITE)
+        msg_rect = msg_surface.get_rect(center=(self.width // 2, self.height // 2 - 60))
+        screen.blit(msg_surface, msg_rect)
+
+        # Show replay menu options
+        options = [
+            "Press 3 for Best of 3",
+            "Press 5 for Best of 5",
+            "Press 7 for Best of 7",
+            "Press ESC to Exit"
+        ]
+        for i, text in enumerate(options):
+            opt_surface = self.font.render(text, True, WHITE)
+            opt_rect = opt_surface.get_rect(center=(self.width // 2, self.height // 2 + i * 40))
+            screen.blit(opt_surface, opt_rect)
+
+    def wait_for_replay(self):
+        waiting = True
+        while waiting:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_3:
+                        self.winning_score = 2  # Best of 3 → first to 2
+                        self.reset_game()
+                        waiting = False
+                    elif event.key == pygame.K_5:
+                        self.winning_score = 3  # Best of 5 → first to 3
+                        self.reset_game()
+                        waiting = False
+                    elif event.key == pygame.K_7:
+                        self.winning_score = 4  # Best of 7 → first to 4
+                        self.reset_game()
+                        waiting = False
+                    elif event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        quit()
+
+            # Draw game over screen continuously while waiting
+            screen = pygame.display.get_surface()
+            self.render_game_over(screen)
+            pygame.display.flip()
+
+    def reset_game(self):
+        # Reset game state for replay
+        self.player_score = 0
+        self.ai_score = 0
+        self.game_over = False
+        self.winner = None
+        self.ball.reset()
+
