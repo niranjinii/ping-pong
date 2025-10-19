@@ -22,12 +22,6 @@ A simple real-time **Ping Pong game** built using **Python and Pygame**, featuri
 
 ---
 
-## 🔊 Sound Effects
-
-Place your `.wav` sound files in an `assets/` folder at the project root:
-
----
-
 ## 🛠️ Installation and Setup
 
 Follow these steps to install and run the Ping Pong game on your system:
