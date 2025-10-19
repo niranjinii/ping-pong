@@ -87,17 +87,3 @@ Once everything is set up, launch the game with:
 ```bash
 python main.py
 ```
-
----
-
-### 6. Controls
-
-| Key           | Action                                |
-| ------------- | ------------------------------------- |
-| **W**         | Move paddle up                        |
-| **S**         | Move paddle down                      |
-| **3 / 5 / 7** | Choose Best-of mode after a game ends |
-| **ESC**       | Exit the game                         |
-
----
-
