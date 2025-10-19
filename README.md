@@ -84,12 +84,6 @@ assets/
 └── score.wav
 ```
 
-You can download them from these free sources:
-
-* [Paddle Hit](https://freesound.org/people/Monster_1999_Kyle/sounds/653392/)
-* [Wall Bounce](https://pixabay.com/sound-effects/bouncing-ball-sound-effect-by-engyclick-280716/)
-* [Score Sound](https://pixabay.com/sound-effects/achievement-bell-6007/)
-
 ---
 
 ### 5. Run the Game
